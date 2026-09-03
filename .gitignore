@@ -14,3 +14,7 @@
 .claude/projects/
 .claude/todos/
 .claude/settings.local.json
+.claude/settings.json.graphify-bak
+
+# Graphify knowledge graph (generated per project — rebuild with `graphify update .`)
+graphify-out/

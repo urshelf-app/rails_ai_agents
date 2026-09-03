@@ -3,8 +3,9 @@ name: api-versioning
 description: >-
   Implements RESTful API design with versioning and request specs. Use when
   building APIs, adding API endpoints, versioning APIs, or when user mentions
-  REST, JSON API, or API design. WHEN NOT: Internal-only endpoints, HTML views,
-  Turbo Stream responses, or APIs without external consumers.
+  REST versioning, API namespaces, or backwards compatibility. WHEN NOT: Response
+  shapes, serializers, error envelopes, or the API contract for a mobile client
+  (use mobile-api), internal-only endpoints, HTML views, or Turbo Stream responses.
 paths: "app/controllers/api/**/*.rb, spec/requests/api/**/*.rb"
 ---
 
@@ -168,53 +169,32 @@ end
 
 ## Response Format
 
-### Standard JSON Response
+Response shape, serializers, error envelopes, and pagination are covered by the
+`mobile-api` skill — this skill stops at where endpoints live and how they are versioned.
+The two conventions that belong here, because they are versioning concerns:
+
+- **Keep the envelope stable across versions.** `{ "data": ... }` for success,
+  `{ "errors": [...] }` for failure, in every version. A client upgrading from v1 to v2
+  should relearn fields, never the envelope.
+- **A new version is for breaking changes only.** Adding an optional field is not
+  breaking; renaming or removing one is. Additive changes ship in the current version.
 
 ```json
 {
-  "data": {
-    "id": 1,
-    "type": "user",
-    "attributes": {
-      "name": "John Doe",
-      "email": "john@example.com",
-      "created_at": "2024-01-15T10:30:00Z"
-    }
-  }
+  "data": { "id": 1, "body": "Hello", "created_at": "2026-01-15T10:30:00Z" },
+  "meta": { "next_cursor": "eyJpZCI6MX0" }
 }
 ```
-
-### Collection Response
 
 ```json
 {
-  "data": [
-    { "id": 1, "type": "user", "attributes": { ... } },
-    { "id": 2, "type": "user", "attributes": { ... } }
-  ],
-  "meta": {
-    "current_page": 1,
-    "total_pages": 10,
-    "total_count": 100
-  }
+  "errors": [
+    { "code": "blank", "field": "body", "detail": "can't be blank" }
+  ]
 }
 ```
 
-### Error Response
-
-```json
-{
-  "error": "Record not found",
-  "code": "not_found"
-}
-
-{
-  "errors": {
-    "email": ["has already been taken"],
-    "name": ["can't be blank"]
-  }
-}
-```
+See the `mobile-api` skill for how these are produced and for the full error taxonomy.
 
 ## Testing APIs
 

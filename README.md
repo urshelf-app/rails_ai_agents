@@ -1,16 +1,16 @@
 # Rails AI Agents
 
-A production-ready Claude Code setup for Ruby on Rails development: **19 specialized agents**, **26 slash commands** (including the [SDD kit](#spec-driven-development-sdd-kit)), **18 skills**, **14 rules** (11 path-scoped + 3 always-on), **1 MCP**, and **6 lifecycle hooks**. Drop it into your project and your AI assistant instantly knows Rails conventions, TDD workflows, and production patterns.
+A production-ready Claude Code setup for Ruby on Rails development: **19 specialized agents**, **29 slash commands** (including the [SDD kit](#spec-driven-development-sdd-kit)), **22 skills**, **15 rules** (11 path-scoped + 4 always-on), **1 MCP**, and **8 lifecycle hooks**. Drop it into your project and your AI assistant instantly knows Rails conventions, TDD workflows, and production patterns.
 
 Also includes:
 - [Spec Driven Development (SDD) kit](#spec-driven-development-sdd-kit) — a full specification-to-implementation pipeline + lightweight mode for bug fixes.
-- a separate 37signals-style conventions pack (`.claude_37signals/`) for teams that prefer rich models + Minitest over the default layered setup.
 - Claude Code Extensibility Guide
 - and more!
 
 
 ## Latest Updates
 
+- Wire in graphify: knowledge-graph search replaces grep as the default way to explore code
 - Add caveman rule with full intensity level (token reduction)
 - Add plan, review, and PR artifact commands.
 - Add tmux session launcher script for Rails development.
@@ -18,19 +18,19 @@ Also includes:
 ## Quick Start
 
 ```bash
-# Most projects: copy the default .claude/ directory into your Rails project
+# Copy the .claude/ directory into your Rails project
 cp -r .claude/ /path/to/your-rails-app/.claude/
 ```
 
 | If you want... | Copy |
 |---|---|
 | Default setup (layered architecture, RSpec, Pundit, PostgreSQL) | `.claude/` |
-| 37signals-style conventions (rich models, concerns, Minitest) | `.claude_37signals/` **instead of** `.claude/` |
-| Spec Driven Development commands (`/sdd:*`, `/sdd-change:*`) | `.specify/` in addition to your chosen `.claude*` pack |
+| Spec Driven Development commands (`/sdd:*`, `/sdd-change:*`) | `.specify/` in addition to `.claude/` |
 | Statusline | `statusline/` |
 | Sentry integration | `mcp/sentry_monitor/` |
+| Knowledge-graph search instead of grep | `graphify install --project --strict` (see [Knowledge Graph](#knowledge-graph-graphify)) |
 
-`.specify/` is optional unless you want the SDD workflow. `.claude_37signals/` is currently a conventions pack (instructions, agents, skills, rules, settings), while the slash-command set documented below lives under `.claude/commands/`.
+`.specify/` is optional unless you want the SDD workflow. The slash-command set documented below lives under `.claude/commands/`.
 
 ## OpenAI Codex and GitHub Copilot Support
 
@@ -81,9 +81,9 @@ Run these scripts after adding, removing, or renaming any skill or rule. If Code
 
 ### Commands (`.claude/commands/`)
 
-26 slash commands across 4 namespaces. See also [SDD commands](#sdd-commands-claudecommandssdd) below.
+29 slash commands across 4 namespaces. See also [SDD commands](#sdd-commands-claudecommandssdd) below.
 
-#### Standalone (7)
+#### Standalone (10)
 
 | Command | Purpose |
 |---|---|
@@ -94,6 +94,9 @@ Run these scripts after adding, removing, or renaming any skill or rule. If Code
 | `/frame-problem` | Reframes vague requests into clear problems |
 | `/prompt-improver` | Scores and rewrites vague prompts into specific, actionable ones |
 | `/catchup` | "Welcome back" report on a feature branch — commits, authors, themes, and risks since the dev's last contribution |
+| `/plan-artifact` | Turns a plan, PRD, roadmap, or rollout doc into a self-contained HTML artifact |
+| `/pr-artifact` | Turns a pull request or diff into a self-contained HTML artifact for reviewers and stakeholders |
+| `/review-artifact` | Turns review findings, audit notes, or QA reports into a self-contained HTML artifact |
 
 #### Sentry Commands (`.claude/commands/sentry/`)
 
@@ -107,7 +110,7 @@ Run these scripts after adding, removing, or renaming any skill or rule. If Code
 
 ### Skills (`.claude/skills/`)
 
-18 skills with reference docs. Two patterns: **task skills** (user-invocable workflows) and **knowledge skills** (auto-loaded conventions).
+22 skills with reference docs. Two patterns: **task skills** (user-invocable workflows) and **knowledge skills** (auto-loaded conventions).
 
 | Skill | Type | Purpose |
 |---|---|---|
@@ -116,6 +119,9 @@ Run these scripts after adding, removing, or renaming any skill or rule. If Code
 | `accessibility-review` | Task | WCAG 2.2 AA audit with axe-core / Lighthouse / Pa11y, progressive-disclosure references for ARIA patterns and Rails snippets (runs with opus) |
 | `codex-review` | Task | Independent second opinion from OpenAI Codex CLI on plans, diffs, or specs |
 | `dependabot-review` | Task | Reviews Dependabot gem upgrade PRs for breaking changes and merge readiness |
+| `friction-review` | Task | Adversarial multi-axis review of specs, ADRs, and designs through 5 reviewers (runs with opus) |
+| `mutation-testing` | Task | Runs `mutant`, reads mutation reports, and fixes alive mutations |
+| `graphify` | Task | Builds and queries a knowledge graph of the codebase — `/graphify .` to index, then `graphify query`. See [Knowledge graph](#knowledge-graph-graphify) |
 | `behavioral-guidelines` | Knowledge | Guidelines to reduce common LLM coding mistakes (auto-loaded) |
 | `rails-architecture` | Knowledge | Layered architecture decisions (runs with opus) |
 | `postgres-patterns` | Knowledge | PostgreSQL query optimization, schema design, indexing, and security |
@@ -125,14 +131,15 @@ Run these scripts after adding, removing, or renaming any skill or rule. If Code
 | `extraction-timing` | Knowledge | When and how to extract services, queries, concerns |
 | `action-cable-patterns` | Knowledge | WebSocket real-time features |
 | `active-storage-setup` | Knowledge | File uploads and variants |
-| `api-versioning` | Knowledge | RESTful API design |
+| `api-versioning` | Knowledge | RESTful API design, URL versioning, backwards compatibility |
+| `mobile-api` | Knowledge | JSON APIs for a first-party mobile client or SPA — Alba serialization, error envelope, cursor pagination, OpenAPI contract |
 | `i18n-patterns` | Knowledge | Internationalization |
 | `solid-queue-setup` | Knowledge | Background job configuration |
 | `rails-concern` | Knowledge | Shared behavior with concerns |
 
 ### Rules (`.claude/rules/`)
 
-14 rules: 11 path-scoped (auto-load when Claude works on matching files) and 3 always-on.
+15 rules: 11 path-scoped (auto-load when Claude works on matching files) and 4 always-on.
 
 #### Path-scoped (11)
 
@@ -150,21 +157,24 @@ Run these scripts after adding, removing, or renaming any skill or rule. If Code
 | `testing.md` | `spec/**` |
 | `anti-patterns.md` | `app/**/*.rb`, `spec/**/*.rb` |
 
-#### Always-on (3)
+#### Always-on (4)
 
 | Rule | Purpose |
 |---|---|
-| `principles.md` | KISS, DRY, YAGNI, SRP, and Rails architecture principles |
+| `principles.md` | KISS, DRY, YAGNI, SRP, Rails architecture principles, and the pre-write ladder (reuse → Rails/Ruby → platform → installed gem → minimum code) |
 | `cli.md` | Rails CLI commands reference (dev server, tests, db, generators) |
 | `cli-tools.md` | Preferred CLI tools: `rg` over `grep`, `fd` over `find` |
+| `caveman.md` | Terse response style for token reduction — keeps all technical substance, drops filler |
 
 ### Hooks (`.claude/settings.json`)
 
 | Hook | Event | What it does |
 |---|---|---|
 | **SessionStart** | Session begins | Injects project context (branch, Ruby/Rails version, pending migrations) |
-| **PostToolUse** | After Edit/Write | Auto-formats Ruby files with RuboCop |
+| **PostToolUse** | After Edit/Write | Auto-formats Ruby files with RuboCop and ERB files with erblint |
 | **PreToolUse** | Before Bash | Blocks destructive commands (rm -rf, DROP TABLE, force push to main) |
+| **PreToolUse** | Before Bash/Grep | `graphify hook-guard search` — steers text searches toward the knowledge graph |
+| **PreToolUse** | Before Read/Glob | `graphify hook-guard read --strict` — blocks the first raw file read of a session until one `graphify query` has run |
 | **TaskCompleted** | Task marked done | Quality gate: reminds to run tests and linting |
 | **Stop** | Response ends | Desktop notification |
 
@@ -173,6 +183,82 @@ Run these scripts after adding, removing, or renaming any skill or rule. If Code
 - **Agent Teams** enabled (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`)
 - **JSON Schema** for editor autocomplete
 - **Smart model routing**: opus for architecture/security, sonnet for coding, haiku for linting
+- **Pre-approved graph queries**: read-only `graphify` subcommands (`query`, `path`, `explain`, `affected`, `god-nodes`, `update`, ...) are allowlisted in `permissions.allow`, so graph lookups never interrupt you with a prompt. Commands that cost money or change your setup (`extract`, `label`, `install`, `global`, `export --push`) are deliberately left out and still ask.
+
+### Knowledge Graph (`graphify`)
+
+The pack is wired to **query a knowledge graph before grepping or reading source**. `graphify`
+indexes the codebase into `graphify-out/graph.json` — symbols, cross-file relationships, community
+structure, and architectural hubs — and answers codebase questions with a scoped subgraph instead
+of a pile of grep hits.
+
+**Prerequisite:** the `graphify` binary must be on `PATH` ([graphify.com](https://app.graphify.com)).
+Without it the hooks fail open and the pack falls back to `rg` / `fd`.
+
+Setup in a new project:
+
+```bash
+graphify install --project --strict   # skill + CLAUDE.md section + PreToolUse hooks, project-scoped
+/graphify .                           # build the initial graph
+```
+
+Daily use:
+
+```bash
+graphify query "how does checkout apply discounts"   # start here, not with grep
+graphify path "Order" "PaymentGateway"               # how two things relate
+graphify explain "Entities::CreateService"           # focused explanation of one symbol
+graphify affected "User#email"                       # blast radius of a change
+graphify update .                                    # after editing code (AST-only, no API cost)
+```
+
+What enforces it:
+
+| Layer | Effect |
+|---|---|
+| `CLAUDE.md` graphify section | Written by `graphify install`; tells the assistant to query the graph first |
+| `.claude/rules/cli-tools.md` | Graph commands are the documented default; `rg` / `fd` are demoted to an explicit fallback for non-code text search |
+| PreToolUse hooks | `hook-guard search` steers Bash/Grep searches to the graph; `hook-guard read --strict` blocks the first raw file read of a session until one `graphify query` runs |
+| `permissions.allow` | Read-only graph commands run without a permission prompt |
+
+Strict mode is the `--strict` flag on the install. Turn it off per session with
+`GRAPHIFY_HOOK_STRICT=0` without touching the config. `graphify-out/` is gitignored — each clone
+rebuilds its own graph.
+
+#### MCP mode (optional, advanced — not wired into this pack)
+
+Graphify can also expose the graph over a stdio MCP server. It is deliberately **not** registered in
+`.claude/settings.json`, because it does not survive being copied between projects. Wire it up
+per project, in that project's own `.mcp.json`, only if you want it.
+
+```bash
+# the graph must already be built
+$(cat graphify-out/.graphify_python) -m graphify.serve graphify-out/graph.json
+```
+
+Tools exposed: `query_graph`, `get_node`, `get_neighbors`, `get_community`, `god_nodes`,
+`graph_stats`, `shortest_path`.
+
+**Read this before enabling it:**
+
+- **Absolute paths only.** Both the interpreter (`cat graphify-out/.graphify_python`) and the
+  `graph.json` argument must be absolute — a `$(...)` substitution is not evaluated by MCP clients.
+  That is why this cannot ship in a pack meant to be copied into other repos.
+- **The graph must exist first.** The server points at a concrete `graph.json` and fails to start
+  without one. The CLI path degrades quietly instead: with no graph, `hook-guard` exits 0 and the
+  pack falls back to `rg` / `fd`.
+- **Subagents will not see it.** All 19 agents declare a closed `tools:` allowlist containing
+  `Bash`, which is what lets them run the CLI today. MCP tools would have to be added to all 19
+  frontmatters by hand.
+- **Strict mode interaction is untested.** `hook-guard` watches the Bash/Grep/Read/Glob tools, not
+  the MCP namespace. An MCP call may not clear the first-read gate, in which case file reads stay
+  blocked until a `graphify query` runs through Bash anyway.
+- **`affected` has no MCP equivalent.** Blast-radius analysis — arguably the most useful command
+  during a refactor — is CLI-only, as are `update`, `save-result`, and `reflect`. What MCP adds
+  over the CLI is `get_neighbors`, `get_community`, and `graph_stats`.
+
+Worth it for a single long-lived project where neighborhood and community exploration is routine.
+Not worth it for a portable configuration pack.
 
 ### Statusline (`statusline/`)
 
@@ -321,17 +407,25 @@ Custom MCP servers that extend Claude Code with external integrations.
 | Document | Purpose |
 |---|---|
 | [Your First SDD Feature](docs/your-first-sdd-feature.md) | Step-by-step onboarding walkthrough for new developers using the SDD kit |
-| [SDD Team Scalability Analysis](docs/sdd-team-scalability-analysis.md) | Risks, gaps, and roadmap for scaling SDD to a 30-developer team |
-| [Rails Development Principles](docs/rails-development-principles.md) | Universal software principles, Rails doctrine, modern Rails 8 architecture, testing, security, and performance |
+| [Personalizing Claude Code](docs/personalizing-claude-code.md) | Filling generic agents, commands, rules, and skills with your own domain knowledge and team decisions |
 | [Prompt Engineering for Claude Code](docs/prompt-engineering-for-claude-code.md) | Writing effective prompts for Claude Code in web development, with Rails-specific patterns |
 | [Claude Code Extensibility Guide](docs/claude-code-extensibility-guide.md) | All extension mechanisms: CLAUDE.md, skills, hooks, subagents, Agent Teams, MCP servers, and plugins |
 | [Claude Code Frontmatter Reference](docs/claude-code-frontmatter-reference.md) | YAML frontmatter syntax for configuring agents, skills, and commands in `.claude/` files |
 | [MCP Servers for Rails](docs/mcp-servers-rails-guide.md) | Extending Claude Code with Model Context Protocol servers for Rails, databases, and APIs |
-| [PRD Best Practices](docs/prd-best-practices.md) | Writing effective Product Requirements Documents in agile, AI-in-the-loop environments |
-| [Technical Design Documents](docs/technical-design-document.md) | TDDs, ADRs, and Engineering RFCs for agentic SDLC teams |
-| [Design Specifications](docs/design-specification.md) | UI/UX design specs and API specifications (OpenAPI) for frontend/backend contracts |
-| [Specification Document Hierarchy](docs/specification-document-hierarchy.md) | Reference map showing which documents answer which core questions |
+| [CLI Tools for Claude Code](docs/cli-tools.md) | Tools that improve how Claude Code searches, navigates, diffs, and audits code |
 | [AI Terminology Glossary](docs/ai-glossary.md) | 289 AI/ML terms across 25 categories — also available as a [browsable HTML version](https://thibautbaissac.github.io/ai/glossary.html) |
+
+### Archived (`docs/archive/`)
+
+Reference material kept for background but no longer part of the active workflow.
+
+| Document | Purpose |
+|---|---|
+| [Rails Development Principles](docs/archive/rails-development-principles.md) | Universal software principles, Rails doctrine, modern Rails 8 architecture, testing, security, and performance |
+| [PRD Best Practices](docs/archive/prd-best-practices.md) | Writing effective Product Requirements Documents in agile, AI-in-the-loop environments |
+| [Technical Design Documents](docs/archive/technical-design-document.md) | TDDs, ADRs, and Engineering RFCs for agentic SDLC teams |
+| [Design Specifications](docs/archive/design-specification.md) | UI/UX design specs and API specifications (OpenAPI) for frontend/backend contracts |
+| [Specification Document Hierarchy](docs/archive/specification-document-hierarchy.md) | Reference map showing which documents answer which core questions |
 
 ## License
 

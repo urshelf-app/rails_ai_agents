@@ -65,7 +65,7 @@ Follow **TDD: Red -> Green -> Refactor**:
 - **No premature abstraction:** Don't extract until complexity demands it. Three similar lines > wrong abstraction.
 - **Explicit > implicit:** Clear service calls over hidden callbacks. Named methods over metaprogramming.
 
-See @docs/rails-development-principles.md for the complete development principles guide.
+See @docs/archive/rails-development-principles.md for the complete development principles guide.
 
 ## Naming Conventions
 
