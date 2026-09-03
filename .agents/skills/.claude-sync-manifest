@@ -10,7 +10,9 @@ codex-review
 dependabot-review
 extraction-timing
 friction-review
+graphify
 i18n-patterns
+mobile-api
 mutation-testing
 performance-optimization
 postgres-patterns
