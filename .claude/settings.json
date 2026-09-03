@@ -3,6 +3,22 @@
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
+  "permissions": {
+    "allow": [
+      "Bash(graphify query:*)",
+      "Bash(graphify path:*)",
+      "Bash(graphify explain:*)",
+      "Bash(graphify affected:*)",
+      "Bash(graphify god-nodes:*)",
+      "Bash(graphify update:*)",
+      "Bash(graphify check-update:*)",
+      "Bash(graphify save-result:*)",
+      "Bash(graphify reflect:*)",
+      "Bash(graphify benchmark:*)",
+      "Bash(graphify diagnose:*)",
+      "Bash(graphify hook-guard:*)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
@@ -44,6 +60,24 @@
             "command": "CMD=$(cat | jq -r '.tool_input.command // empty') && if echo \"$CMD\" | grep -qiE '(rm\\s+-rf\\s+[/~]|DROP\\s+TABLE|DROP\\s+DATABASE|git\\s+push\\s+.*(-f|--force)\\s+.*(main|master|production)|chmod\\s+777)'; then echo 'Blocked: This command is potentially destructive. Please confirm with the user before proceeding.' >&2; exit 2; fi",
             "timeout": 5,
             "statusMessage": "Checking command safety..."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "graphify hook-guard search"
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "graphify hook-guard read --strict"
           }
         ]
       }
